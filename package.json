@@ -1,0 +1,25 @@
+{
+  "name": "auto-release-sinon",
+  "version": "1.0.0",
+  "description": "Basic sinon wrapper that automatically releases it's stubs, works with mocha's BDD interface",
+  "main": "autoReleaseSinon.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spalger/auto-release-sinon.git"
+  },
+  "keywords": [
+    "mocha",
+    "sinon",
+    "release",
+    "auto-release"
+  ],
+  "author": "Spencer Alger <email@spalger.com>",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/spalger/auto-release-sinon/issues"
+  },
+  "homepage": "https://github.com/spalger/auto-release-sinon#readme"
+}
