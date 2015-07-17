@@ -1,59 +1,55 @@
-var sinon = require('sinon');
-var _ = require('lodash');
 
-var toRestore = [];
-var toWrap = {
-  stub: null,
-  spy: null,
-  useFakeTimers: function (clock) {
-    // timeouts are indexed by their id in an array,
-    // the holes make the .length property "wrong"
-    clock.timeoutCount = function () {
-      return clock.timeoutList().length;
-    };
+function own(obj, fn) {
+  if (typeof obj !== 'object') return;
 
-    clock.timeoutList = function () {
-      return clock.timeouts ? clock.timeouts.filter(Boolean) : [];
-    };
-  }
-};
+  Object.keys(obj).forEach(function (k) {
+    fn(obj[k], k, obj);
+  });
+}
 
-_.forOwn(toWrap, function (modify, method) {
-  var orig = sinon[method];
-  sinon[method] = function () {
-    var obj = orig.apply(sinon, arguments);
+module.exports = function hook(sinon, afterEach) {
 
-    // after each test this list is cleared
-    if (obj.restore) toRestore.push(obj);
+  var toRestore = [];
+  var toWrap = {
+    stub: null,
+    spy: null,
+    useFakeTimers: function (clock) {
+      // timeouts are indexed by their id in an array,
+      // the holes make the .length property "wrong"
+      clock.timeoutCount = function () {
+        return clock.timeoutList().length;
+      };
 
-    if (typeof modify === 'function') modify(obj);
-
-    return obj;
+      clock.timeoutList = function () {
+        return clock.timeouts ? clock.timeouts.filter(Boolean) : [];
+      };
+    }
   };
 
-  _.forOwn(orig, function (val, name) {
-    sinon[method][name] = val;
-  });
-});
+  own(toWrap, function (modify, method) {
+    var orig = sinon[method];
+    sinon[method] = function () {
+      var obj = orig.apply(sinon, arguments);
 
-// helper
-sinon.decorateWithSpy = _.restParam(function (props) {
-  return function ($delegate) {
-    props.forEach(function (prop) {
-      sinon.spy($delegate, prop);
+      // after each test this list is cleared
+      if (obj.restore) toRestore.push(obj);
+
+      if (typeof modify === 'function') modify(obj);
+
+      return obj;
+    };
+
+
+    own(orig, function (val, name) {
+      sinon[method][name] = val;
     });
-
-    return $delegate;
-  };
-});
-
-afterEach(function () {
-  if (!toRestore.length) return;
-
-  _.each(toRestore, function (obj) {
-    obj.restore();
   });
 
-  toRestore = [];
-});
+  afterEach(function () {
+    toRestore.splice(0).forEach(function (obj) {
+      obj.restore();
+    });
+  });
 
+  return sinon;
+};
