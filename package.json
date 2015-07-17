@@ -1,6 +1,6 @@
 {
   "name": "auto-release-sinon",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Basic sinon wrapper that automatically releases it's stubs, works with mocha's BDD interface",
   "main": "autoReleaseSinon.js",
   "scripts": {
