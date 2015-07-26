@@ -1,8 +1,8 @@
 
 function own(obj, fn) {
-  if (typeof obj !== 'object') return;
-
-  Object.keys(obj).forEach(function (k) {
+  var keys;
+  try { keys = Object.keys(obj); } catch (e) {} // non-itterables will throw here
+  (keys || []).forEach(function (k) {
     fn(obj[k], k, obj);
   });
 }
