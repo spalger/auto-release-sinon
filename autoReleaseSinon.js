@@ -1,31 +1,39 @@
 
+function keys(obj) {
+  // non-itterables will throw here, but checking
+  // typeof === "object" skips things like functions
+  try { return Object.keys(obj); }
+  catch (e) { return []; }
+}
+
 function own(obj, fn) {
-  var keys;
-  try { keys = Object.keys(obj); } catch (e) {} // non-itterables will throw here
-  (keys || []).forEach(function (k) {
+  keys(obj).forEach(function (k) {
     fn(obj[k], k, obj);
   });
 }
 
-module.exports = function hook(sinon, afterEach) {
+var toWrap = {
+  stub: null,
+  spy: null,
+  useFakeTimers: function (clock) {
+    // timeouts are indexed by their id in an array,
+    // the holes make the .length property "wrong"
+    clock.timeoutCount = function () {
+      return clock.timeoutList().length;
+    };
+
+    clock.timeoutList = function () {
+      return clock.timeouts ? clock.timeouts.filter(Boolean) : [];
+    };
+  }
+};
+
+function setupAutoRelease(actualSinon, afterEach) {
+  var sinon = module.exports = Object.create(actualSinon);
+
+  sinon.setupAutoRelease = setupAutoRelease;
 
   var toRestore = [];
-  var toWrap = {
-    stub: null,
-    spy: null,
-    useFakeTimers: function (clock) {
-      // timeouts are indexed by their id in an array,
-      // the holes make the .length property "wrong"
-      clock.timeoutCount = function () {
-        return clock.timeoutList().length;
-      };
-
-      clock.timeoutList = function () {
-        return clock.timeouts ? clock.timeouts.filter(Boolean) : [];
-      };
-    }
-  };
-
   own(toWrap, function (modify, method) {
     var orig = sinon[method];
     sinon[method] = function () {
@@ -52,4 +60,8 @@ module.exports = function hook(sinon, afterEach) {
   });
 
   return sinon;
+}
+
+module.exports = {
+  setupAutoRelease: setupAutoRelease
 };
